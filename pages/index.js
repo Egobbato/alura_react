@@ -1,3 +1,4 @@
+import React from "react";
 import config from "../config.json";
 import styled from "styled-components";
 import { CSSReset } from "../src/components/CSSReset";
@@ -9,13 +10,26 @@ function HomePage() {
     // backgroundColor: "red"
   };
 
+  const [valorDoFiltro, setvalorDoFiltro] = React.useState("");
+
   return (
     <>
       <CSSReset />
-      <div style={estiloHomePage}>
-        <Menu />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+        }}
+      >
+        <Menu
+          valorDoFiltro={valorDoFiltro}
+          setvalorDoFiltro={setvalorDoFiltro}
+        />
         <Header></Header>
-        <TimeLine playlists={config.playlists}>Conteudo </TimeLine>
+        <TimeLine searchValue={valorDoFiltro} playlists={config.playlists}>
+          Conteudo
+        </TimeLine>
       </div>
       ;
     </>
@@ -35,7 +49,6 @@ const StyledHeader = styled.div`
     border-radius: 50%;
   }
   .user-info {
-    margin-top: 60px;
     display: flex;
     align-items: center;
     width: 100%;
@@ -43,10 +56,16 @@ const StyledHeader = styled.div`
     gap: 16px;
   }
 `;
+
+const StyledBanner = styled.div`
+  height: 230px;
+  background-image: url(${config.bg});
+`;
+
 function Header() {
   return (
     <StyledHeader>
-      {/* <img src="" /> */}
+      <StyledBanner />
       <section className="user-info">
         <img src={config.github} />
         <div>
@@ -59,7 +78,7 @@ function Header() {
   );
 }
 
-function TimeLine(props) {
+function TimeLine({ searchValue, ...props }) {
   const playlistNames = Object.keys(props.playlists);
 
   return (
@@ -67,17 +86,24 @@ function TimeLine(props) {
       {playlistNames.map((playlistName) => {
         const videos = props.playlists[playlistName];
         return (
-          <section>
+          <section key={playlistName}>
             <h2>{playlistName}</h2>
             <div>
-              {videos.map((video) => {
-                return (
-                  <a href={video.url}>
-                    <img src={video.thumb} />
-                    <span>{video.title}</span>
-                  </a>
-                );
-              })}
+              {videos
+                .filter((video) => {
+                  const titleNormalized = video.title.toLowerCase();
+                  const searchNormalized = searchValue.toLowerCase();
+
+                  return titleNormalized.includes(searchNormalized);
+                })
+                .map((video) => {
+                  return (
+                    <a key={video.url} href={video.url}>
+                      <img src={video.thumb} />
+                      <span>{video.title}</span>
+                    </a>
+                  );
+                })}
             </div>
           </section>
         );
